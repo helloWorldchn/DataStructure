@@ -20,7 +20,11 @@ public class BubbleSortAlgorithm {
 					arrays[j] = temp;
 				}
 			}
+<<<<<<< HEAD
 //			System.out.println("第"+(i+1)+"趟之后："+Arrays.toString(arrays));
+=======
+			System.out.println("第"+(i+1)+"趟之后："+Arrays.toString(arrays));
+>>>>>>> 210cfec (add the SortAlgorithm)
 		}
 	}
 	
