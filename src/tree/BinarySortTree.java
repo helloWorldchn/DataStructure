@@ -4,7 +4,6 @@ import java.util.LinkedList;
 import java.util.Queue;
 
 public class BinarySortTree {
-	
 	// Definition for a binary tree node.
 	public class TreeNode {
 		int val;
@@ -20,7 +19,6 @@ public class BinarySortTree {
 			this.right = right;
 		}
 	}
-	
 	
     TreeNode root; // 新建根节点
     /*
@@ -58,12 +56,12 @@ public class BinarySortTree {
     }
        
     /**
-     * 在二叉树中插入节点
-     * 要插入节点，必须先找到插入的位置。
-     * 由于二叉搜索树的特殊性，待插入的节点需要从根节点开始进行比较
-     * 小于根节点则与根节点左子树比较，反之则与右子树比较，直到左子树为空或右子树为空
-     * 则插入到相应为空的位置
-     * 在比较的过程中要注意保存父节点的信息及待插入的位置是父节点的左子树还是右子树
+         * 在二叉树中插入节点
+         * 要插入节点，必须先找到插入的位置。
+         * 由于二叉搜索树的特殊性，待插入的节点需要从根节点开始进行比较
+         * 小于根节点则与根节点左子树比较，反之则与右子树比较，直到左子树为空或右子树为空
+         * 则插入到相应为空的位置
+         * 在比较的过程中要注意保存父节点的信息及待插入的位置是父节点的左子树还是右子树
      * @param val
      */
     public void insert(int val) {
@@ -119,8 +117,8 @@ public class BinarySortTree {
     
     
     /**
-     * 删除与val值相同的节点
-     * 删除共三种情况
+         * 删除与val值相同的节点
+         * 删除共三种情况
      * 1 该节点是叶子节点
      * 2 该节点有一个叶子节点
      * 3 该节点有两个叶子节点

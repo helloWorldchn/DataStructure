@@ -64,15 +64,12 @@ public class HeapSortAlgorithm {
         }
     }
 
-<<<<<<< HEAD
     /**
      * 测试用例
      *
      * 输出：
      * [0, 0, 0, 1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4, 5, 5, 5, 6, 6, 6, 7, 7, 7, 8, 8, 8, 9, 9, 9]
      */
-=======
->>>>>>> 210cfec (add the SortAlgorithm)
     public static void main(String[] args) {
 		int arrays[] = {6,2,13,27,49,74,12,64,5,4,-62,99,5,17,18,23,34,15,35,25,53,51};
 		System.out.println("原始数据集："+Arrays.toString(arrays));
