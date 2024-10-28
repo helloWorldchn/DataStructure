@@ -2,6 +2,9 @@ package graph;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Queue;
 
@@ -22,10 +25,16 @@ public class AdjacencyListGraph {
 			this.vertex = vertex;
 			this.next = next; 
 		}
-        EdgeNode(String vertex, EdgeNode next, int weight) { 
+        EdgeNode(String vertex, int adjvex, int weight) { 
         	this.vertex = vertex;
-        	this.next = next; 
+        	this.adjvex = adjvex; 
         	this.weight = weight;
+        }
+        EdgeNode(String vertex, int adjvex,  int weight, EdgeNode next) { 
+        	this.vertex = vertex;
+        	this.adjvex = adjvex; 
+        	this.weight = weight;
+        	this.next = next; 
         }
 	}
 	// 作为某个点的邻接点的顶点信息
@@ -134,10 +143,10 @@ public class AdjacencyListGraph {
 			EdgeNode edgeNode = headNode[i].firstEdge;
             System.out.print(headNode[i].data);
 			if (edgeNode != null) {
-				System.out.print("-->"+edgeNode.weight+"\t"+  "[" + headNode[edgeNode.adjvex].data + "|" + edgeNode.weight + "]");
+				System.out.print("-->"+"\t"+  "[" + headNode[edgeNode.adjvex].data + "|" + edgeNode.weight + "]");
 				EdgeNode temp = edgeNode.next;
                 while (temp != null){
-                    System.out.print("-->"+edgeNode.weight +"\t"+ "[" + headNode[temp.adjvex].data + "|" + temp.weight + "]");
+                    System.out.print("-->"+"\t"+ "[" + headNode[temp.adjvex].data + "|" + temp.weight + "]");
                     temp = temp.next;
                 }
                 System.out.println();
@@ -223,6 +232,138 @@ public class AdjacencyListGraph {
     	}
     }
     
+    /**
+     *  @descript 最小生成树算法：prim算法
+     *  @param: graph
+     */
+    public void prim() {
+        int V = vertexNumber;
+        boolean[] mstSet = new boolean[V]; // 存储顶点是否已加入最小生成树的集合
+        int[] key = new int[V]; // 存储顶点到最小生成树的最小权重
+        int[] parent = new int[V]; // 存储最小生成树的边
+
+        Arrays.fill(key, Integer.MAX_VALUE);
+        key[0] = 0; // 将起始顶点的key值设为0
+        parent[0] = -1; // 将起始顶点的父节点设为-1
+
+        for (int count = 0; count < vertexNumber - 1; count++) {
+            int u = minKey(key, mstSet, vertexNumber); // 选择key值最小的顶点u
+            mstSet[u] = true; // 将顶点u标记为已访问
+
+            // 更新与顶点u相邻的顶点的key值和parent信息
+            EdgeNode current = headNode[u].firstEdge;
+            while (current != null) {
+                int v = vertexList.indexOf(current.vertex);
+                int weight = current.weight;
+                if (!mstSet[v] && weight < key[v]) {
+                    parent[v] = u;
+                    key[v] = weight;
+                }
+                current = current.next;
+            }
+        }
+
+        // 输出最小生成树的边和权重
+        System.out.println("Edge" + "\t" + "Weight");
+        for (int i = 1; i < vertexNumber; i++) {
+        	if (headNode[i].firstEdge.vertex == vertexList.get(parent[i])) {
+				// 不是头结点，直接确定对应权值
+                System.out.println(vertexList.get(parent[i]) + " -> " + vertexList.get(i) +  "\t"  + headNode[i].firstEdge.weight);
+			} else {
+				// 不是头结点，顺着链表遍历，寻找对应权值
+				EdgeNode currentEdge = headNode[i].firstEdge;
+				while (currentEdge!=null) {
+					if (currentEdge.vertex == vertexList.get(parent[i])) {
+		                System.out.println(vertexList.get(parent[i]) + " -> " + vertexList.get(i) +  "\t"  + currentEdge.weight);
+						break;
+					}
+					currentEdge = currentEdge.next;
+				}
+			}
+        }
+    }
+
+    // 选择key值最小的顶点
+    private int minKey(int[] key, boolean[] mstSet, int V) {
+        int min = Integer.MAX_VALUE, minIndex = -1;
+
+        for (int v = 0; v < V; v++) {
+            if (!mstSet[v] && key[v] < min) {
+                min = key[v];
+                minIndex = v;
+            }
+        }
+
+        return minIndex;
+    }
+
+    
+    /**
+     *  @descript 最小生成树算法：kruskal算法
+     */
+    public void kruskal() {
+        List<Edge> edges = new ArrayList<>();// 用于存储图中的所有边
+        // 将图的边存储在edges列表中
+        for (int i = 0; i < vertexNumber; i++) {
+            EdgeNode current = headNode[i].firstEdge;
+            while (current != null) {
+            	Edge edge = new Edge(i, vertexList.indexOf(current.vertex), current.weight);
+                edges.add(edge);
+                current = current.next;
+            }
+        }
+        // 将图的边存储在edges列表中
+        Collections.sort(edges, Comparator.comparingInt(e -> e.weight));
+
+        int[] parent = new int[vertexNumber]; // 用于存储每个顶点的父节点
+        Arrays.fill(parent, -1);
+        List<Edge> mst = new ArrayList<>();  // 用于存储最小生成树的边
+
+        int edgeCount = 0;
+        // 遍历所有边
+        for (Edge edge : edges) {
+            int x = find(parent, edge.src);
+            int y = find(parent, edge.dest);
+            // 如果边的两个顶点不在同一个连通分量中，则加入最小生成树
+            if (x != y) {
+                mst.add(edge); // 将边加入最小生成树
+                union(parent, x, y); // 合并两个顶点的连通分量
+                edgeCount++;  // 增加边的数量
+                if (edgeCount == vertexNumber - 1) {// 已找到n-1条边，则退出循环
+                    break;
+                }
+            }
+        }
+        // 输出最小生成树的边和权重
+        for (Edge edge : mst) {
+            System.out.println(vertexList.get(edge.src) + " - " + vertexList.get(edge.dest) + " : " + edge.weight);
+        }
+    }
+    // 查找顶点i的根节点
+    private int find(int[] parent, int i) {
+        if (parent[i] == -1) {
+            return i; // 如果顶点i的父节点为-1，表示i是根节点
+        }
+        return find(parent, parent[i]); // 递归查找i的根节点
+    }
+    // 合并两个顶点x和y的连通分量
+    private void union(int[] parent, int x, int y) {
+        int rootX = find(parent, x);// 查找顶点x的根节点
+        int rootY = find(parent, y);// 查找顶点y的根节点
+        parent[rootX] = rootY; // 将顶点x的根节点的父节点设为顶点y的根节点
+    }
+    // 辅助类表示边的信息
+    class Edge {
+        int src;
+        int dest;
+        int weight;
+
+        public Edge(int src, int dest, int weight) {
+            this.src = src;
+            this.dest = dest;
+            this.weight = weight;
+        }
+    }
     
 	public static void main(String[] args) {
 		AdjacencyListGraph adjacencyListGraph = new AdjacencyListGraph(5);
@@ -240,6 +381,15 @@ public class AdjacencyListGraph {
 		adjacencyListGraph.insertEdge("D", "A", 11);
 		adjacencyListGraph.insertEdge("D", "B", 7);
 		adjacencyListGraph.insertEdge("E", "C", 21);
+		
+		adjacencyListGraph.insertEdge("B", "A", 15);
+		adjacencyListGraph.insertEdge("E", "A", 9);
+		adjacencyListGraph.insertEdge("C", "B", 3);
+		adjacencyListGraph.insertEdge("D", "C", 2);
+		adjacencyListGraph.insertEdge("A", "D", 11);
+		adjacencyListGraph.insertEdge("B", "D", 7);
+		adjacencyListGraph.insertEdge("C", "E", 21);
+		
 		System.out.println("==========Adjacency List==========");
 		adjacencyListGraph.display();
 		System.out.println("==========Deep First Search==========");
@@ -249,12 +399,17 @@ public class AdjacencyListGraph {
 		System.out.println("==========Breadth First Search==========");
 		List<Object> bfsList = adjacencyListGraph.breadthFirstSearch();
 		System.out.println(bfsList);
+
+		System.out.println("============Prim============");
+		adjacencyListGraph.prim();
+		System.out.println("============Kruskal============");
+		adjacencyListGraph.kruskal();
 		/*
-		 * A-->15	[B|15]-->15	[E|9]
-		 * B-->3	[C|3]
-		 * C-->2	[D|2]
-		 * D-->11	[A|11]-->11	[B|7]
-		 * E-->21	[C|21]
+		 * A-->	[B|15]-->	[E|9]-->	[D|11]
+		 * B-->	[C|3]-->	[A|15]-->	[D|7]
+		 * C-->	[D|2]-->	[B|3]-->	[E|21]
+		 * D-->	[A|11]-->	[B|7]-->	[C|2]
+		 * E-->	[C|21]-->	[A|9]
 		 */
 	}
 }

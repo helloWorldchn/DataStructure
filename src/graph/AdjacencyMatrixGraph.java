@@ -3,6 +3,7 @@ package graph;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Queue;
@@ -212,10 +213,10 @@ public class AdjacencyMatrixGraph {
         }
         
         // 打印最小生成树的边和权重
-        System.out.println("Edge \tWeight");
+        System.out.println("Edge" + "\t" + "Weight");
         for (int i = 1; i < graph.length; i++) {
             if (parent[i] != -1) { // 避免打印起始节点的边
-            	System.out.println(parent[i] + " - " + i + "\t" + graph[parent[i]][i]);
+            	System.out.println(vertexList.get(parent[i]) + " -> " + vertexList.get(i) + "\t" + graph[parent[i]][i]);
             }
         }
     }
@@ -237,56 +238,69 @@ public class AdjacencyMatrixGraph {
      */
     public void kruskal(int[][] graph) {
         int vertices = graph.length;
-        List<int[]> edges = new ArrayList<>();
-
+        List<Edge> edges = new ArrayList<>(); // 用于存储图中的所有边
         // 将图的边存储在edges列表中
         for (int i = 0; i < vertices; i++) {
-            for (int j = i + 1; j < vertices; j++) {
+            for (int j = 0; j < vertices; j++) {
                 if (graph[i][j] != 0) {
-                    edges.add(new int[]{i, j, graph[i][j]});
+                	Edge edge = new Edge(i, j, graph[i][j]);  // 边的起点、终点和权值
+                    edges.add(edge);
                 }
             }
         }
 
         // 按权重对边进行排序
-        edges.sort(Comparator.comparingInt(a -> a[2]));
-
-        int[] parent = new int[vertices];
+        Collections.sort(edges, Comparator.comparingInt(e -> e.weight));
+        int[] parent = new int[vertices]; // 用于存储每个顶点的父节点
         Arrays.fill(parent, -1);
 
-        List<int[]> mst = new ArrayList<>();
+        List<Edge> mst = new ArrayList<>();  // 用于存储最小生成树的边
         int edgeCount = 0;
-
-        for (int[] edge : edges) {
-            int x = find(parent, edge[0]);
-            int y = find(parent, edge[1]);
+        // 遍历所有边
+        for (Edge edge : edges) {
+            int x = find(parent, edge.src); // 查找边的起点的根节点
+            int y = find(parent, edge.dest); // 查找边的终点的根节点
 
             // 如果边的两个顶点不在同一个连通分量中，则加入最小生成树
             if (x != y) {
-                mst.add(edge);
-                union(parent, x, y);
-                edgeCount++;
-
-                if (edgeCount == vertices - 1) // 已找到n-1条边，则退出循环
+                mst.add(edge);  // 将边加入最小生成树
+                union(parent, x, y); // 合并两个顶点的连通分量
+                edgeCount++;  // 增加边的数量
+                if (edgeCount == vertices - 1) { // 已找到n-1条边，则退出循环
                     break;
+                }
             }
         }
-
-        System.out.println("Edge \tWeight");
-        for (int[] edge : mst) {
-            System.out.println(edge[0] + " - " + edge[1] + "\t" + edge[2]);
+        // 输出最小生成树的边和权重
+        System.out.println("Edge" + "\t" + "Weight");
+        for (Edge edge : mst) {
+        	System.out.println(vertexList.get(edge.src) + " -> " + vertexList.get(edge.dest) + "\t" +  edge.weight);
         }
     }
+    // 查找顶点i的根节点
     private int find(int[] parent, int i) {
         if (parent[i] == -1) {
-            return i;
+            return i; // 如果顶点i的父节点为-1，表示i是根节点
         }
-        return find(parent, parent[i]);
+        return find(parent, parent[i]); // 递归查找i的根节点
     }
+    // 合并两个顶点x和y的连通分量
     private void union(int[] parent, int x, int y) {
-        int rootX = find(parent, x);
-        int rootY = find(parent, y);
-        parent[rootX] = rootY;
+        int rootX = find(parent, x);// 查找顶点x的根节点
+        int rootY = find(parent, y);// 查找顶点y的根节点
+        parent[rootX] = rootY; // 将顶点x的根节点的父节点设为顶点y的根节点
+    }
+    // 辅助类表示边的信息
+    class Edge {
+        int src;
+        int dest;
+        int weight;
+
+        public Edge(int src, int dest, int weight) {
+            this.src = src;
+            this.dest = dest;
+            this.weight = weight;
+        }
     }
     
 	public static void main(String[] args) {
@@ -303,7 +317,15 @@ public class AdjacencyMatrixGraph {
 		adjacencyMatrixGraph.insertEdge(2, 3, 2);
 		adjacencyMatrixGraph.insertEdge(3, 0, 11);
 		adjacencyMatrixGraph.insertEdge(3, 1, 7);
-		adjacencyMatrixGraph.insertEdge(4, 2, 21 );
+		adjacencyMatrixGraph.insertEdge(4, 2, 21);
+		
+		adjacencyMatrixGraph.insertEdge(1, 0, 15);
+		adjacencyMatrixGraph.insertEdge(4, 0, 9);
+		adjacencyMatrixGraph.insertEdge(2, 1, 3);
+		adjacencyMatrixGraph.insertEdge(3, 2, 2);
+		adjacencyMatrixGraph.insertEdge(0, 3, 11);
+		adjacencyMatrixGraph.insertEdge(1, 3, 7);
+		adjacencyMatrixGraph.insertEdge(2, 4, 21);
 
 		System.out.println("==========Adjacency Matrix==========");
 		adjacencyMatrixGraph.display();
@@ -319,12 +341,13 @@ public class AdjacencyMatrixGraph {
 		adjacencyMatrixGraph.prim(adjacencyMatrixGraph.arcs);
 		System.out.println("============Kruskal============");
 		adjacencyMatrixGraph.kruskal(adjacencyMatrixGraph.arcs);
-		/*   A B C D E
-		 * A 0 1 0 0 1 
-		 * B 0 0 1 0 0 
-		 * C 0 0 0 1 0 
-		 * D 1 1 0 0 0 
-		 * E 0 0 1 0 0 
+		/*  
+		 *		A	B	C	D	E	
+		 *	A	0	15	0	11	9	
+		 *	B	15	0	3	7	0	
+		 *	C	0	3	0	2	21	
+		 *	D	11	7	2	0	0	
+		 *	E	9	0	21	0	0	
 		 */
 		
 	}
