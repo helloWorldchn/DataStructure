@@ -18,7 +18,7 @@ target/
 .project
 .settings
 .springBeans
-.bin
+bin/
 
 ### IntelliJ IDEA ###
 .idea
