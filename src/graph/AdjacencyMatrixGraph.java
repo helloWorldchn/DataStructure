@@ -307,6 +307,7 @@ public class AdjacencyMatrixGraph {
     /**
      *  @descript 最短路径算法：dijkstra算法
      *  @param start
+     *  @return int[]
      */
     public int[] dijkstra(int start) {
         // 初始化
@@ -346,7 +347,8 @@ public class AdjacencyMatrixGraph {
         // 打印最短路径和最短路径长度
         for (int i = 0; i < vertexList.size(); i++) {
         	if (i != start) {
-                System.out.print("Shortest Path of "+ vertexList.get(start) +" to " + vertexList.get(i)+ " : " + dist[i]+"\t");
+                System.out.print("Shortest Path of "+ vertexList.get(start) +" to " + vertexList.get(i)+ " : " + dist[i]);
+                System.out.print("\t" +"Path : ");
                 int index = i;
                 Stack<Integer> stack = new Stack<>();
                 stack.push(index);
@@ -368,6 +370,7 @@ public class AdjacencyMatrixGraph {
     }
     /**
      *  @descript 最短路径算法：Floyd算法
+     *  @return int[][]
      */
     public int[][] floyd() {
         // 初始化
@@ -376,13 +379,19 @@ public class AdjacencyMatrixGraph {
         for (int i = 0; i < vertexNumber; i++) {
             for (int j = 0; j < vertexNumber; j++) {
             	dist[i][j] = arcs[i][j]==0 ? INF: arcs[i][j];
+                if (i != j && dist[i][j] < INF) {
+                    path[i][j] = i;
+                } else {
+                    path[i][j] = -1;
+                }
             }
         }
         // 动态规划思想迭代计算
         for (int k = 0; k < vertexNumber; k++) {
             for (int i = 0; i < vertexNumber; i++) {
                 for (int j = 0; j < vertexNumber; j++) {
-                	if (arcs[i][k] != 0 && arcs[k][j] != 0) {
+                	if (i!=j && arcs[i][k] != 0 && arcs[k][j] != 0) {
+                        path[i][j] = dist[i][j]>dist[i][k] + dist[k][j]? path[k][j]: path[i][j];
                     	dist[i][j] = Math.min(dist[i][j], dist[i][k] + dist[k][j]); // 更新递推公式
 					}
                 }
@@ -391,8 +400,24 @@ public class AdjacencyMatrixGraph {
         // 打印
         for (int i = 0; i < vertexNumber; i++) {
             for (int j = 0; j < vertexNumber; j++) {
-            	if (i != j && arcs[i][j] != 0) {
-                    System.out.println("Shortest Path of " + vertexList.get(i) + " to " + vertexList.get(j) + " : " + dist[i][j]);
+                if (i != j && dist[i][j] != INF) {
+                    System.out.print("Shortest Path of " + vertexList.get(i) + " to " + vertexList.get(j) + " : " + dist[i][j]);
+                    System.out.print("\t" +"Path : ");
+                    int temp = path[i][j];
+                    Stack<Integer> stack = new Stack<>();
+                    stack.push(j);
+                    while (path[i][temp] != -1) {
+                        stack.push(temp);
+                        temp = path[i][temp];
+                    }
+                    stack.push(i);
+                    while (!stack.isEmpty()) {
+                        System.out.print(vertexList.get(stack.pop()));
+                        if (!stack.isEmpty()) {
+                            System.out.print("->");
+                        }
+                    }
+                    System.out.println();
                 }
             }
         }
@@ -408,21 +433,21 @@ public class AdjacencyMatrixGraph {
 		adjacencyMatrixGraph.insertVertex("E");
 		
 		adjacencyMatrixGraph.insertEdge(0, 1, 15);
-		adjacencyMatrixGraph.insertEdge(0, 4, 9);
-		adjacencyMatrixGraph.insertEdge(1, 2, 3);
-		adjacencyMatrixGraph.insertEdge(2, 3, 2);
-		adjacencyMatrixGraph.insertEdge(3, 0, 11);
-		adjacencyMatrixGraph.insertEdge(3, 1, 7);
-		adjacencyMatrixGraph.insertEdge(4, 2, 21);
+		adjacencyMatrixGraph.insertEdge(0, 2, 9);
+		adjacencyMatrixGraph.insertEdge(0, 4, 11);
+		adjacencyMatrixGraph.insertEdge(1, 3, 3);
+		adjacencyMatrixGraph.insertEdge(1, 4, 7);
+		adjacencyMatrixGraph.insertEdge(2, 3, 21);
+		adjacencyMatrixGraph.insertEdge(4, 5, 2);
 		
 		adjacencyMatrixGraph.insertEdge(1, 0, 15);
-		adjacencyMatrixGraph.insertEdge(4, 0, 9);
-		adjacencyMatrixGraph.insertEdge(2, 1, 3);
-		adjacencyMatrixGraph.insertEdge(3, 2, 2);
-		adjacencyMatrixGraph.insertEdge(0, 3, 11);
-		adjacencyMatrixGraph.insertEdge(1, 3, 7);
-		adjacencyMatrixGraph.insertEdge(2, 4, 21);
-
+		adjacencyMatrixGraph.insertEdge(2, 0, 9);
+		adjacencyMatrixGraph.insertEdge(4, 0, 11);
+		adjacencyMatrixGraph.insertEdge(3, 1, 3);
+		adjacencyMatrixGraph.insertEdge(4, 1, 7);
+		adjacencyMatrixGraph.insertEdge(3, 2, 21);
+		adjacencyMatrixGraph.insertEdge(5, 4, 2);
+		
 		System.out.println("==========Adjacency Matrix==========");
 		adjacencyMatrixGraph.display();
 //		adjacencyMatrixGraph.getFirstNeighbor(1);
@@ -438,9 +463,9 @@ public class AdjacencyMatrixGraph {
 		System.out.println("============Kruskal============");
 		adjacencyMatrixGraph.kruskal(adjacencyMatrixGraph.arcs);
 		System.out.println("============Dijkstra============");
-		adjacencyMatrixGraph.dijkstra(0);
+		int[] dijkstraDistance = adjacencyMatrixGraph.dijkstra(0);
 		System.out.println("============Floyd============");
-		adjacencyMatrixGraph.floyd();
+		int[][] floydDistance = adjacencyMatrixGraph.floyd();
 		/*  
 		 *		A	B	C	D	E	
 		 *	A	0	15	0	11	9	
