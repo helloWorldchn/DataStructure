@@ -310,16 +310,20 @@ public class AdjacencyMatrixGraph {
      *  @return int[]
      */
     public int[] dijkstra(int start) {
+    	if (start > vertexList.size() || start < 0) {
+            System.out.println("Start vertex not found.");
+            return new int[] {};
+		}
         // 初始化
-        boolean[] shortestPathSet = new boolean[vertexList.size()]; // 存放所有已知实际最短路径值的顶点,true代表已知其最短路径
+        boolean[] visited = new boolean[vertexList.size()]; // 存放所有已知实际最短路径值的顶点,true代表已知其最短路径
         int[] path = new int[vertexList.size()]; // 表示从源点到顶点之间的最短路径的前驱结点
         int[] dist = new int[vertexList.size()]; // 表示从源点到顶点之间的弧上的权值
         for (int i = 0; i < vertexList.size(); i++) {
-            shortestPathSet[i] = false; // 顶点i的最短路径还没获取到。
+            visited[i] = false; // 顶点i的最短路径还没获取到。
             path[i] = 0;  // 顶点i的前驱顶点为0。
             dist[i] = arcs[start][i]==0 ? INF : arcs[start][i];  // 顶点i的最短路径为起点到顶点i的权值
         }
-        shortestPathSet[start] = true;
+        visited[start] = true;
         dist[start] = 0;
 
         // 迭代计算最短路径
@@ -329,16 +333,16 @@ public class AdjacencyMatrixGraph {
             // 即，在未获取最短路径的顶点中，找到离vs最近的顶点(k)。
             int min = INF;
             for (int j = 0; j < vertexList.size(); j++) {
-                if (!shortestPathSet[j] && dist[j]<min) {
+                if (!visited[j] && dist[j]<min) {
                     min = dist[j];
                     k = j;
                 }
             }
-            shortestPathSet[k] = true; // 第k个顶点已找到最短路径
+            visited[k] = true; // 第k个顶点已找到最短路径
 
             // 更新最短路径dist和前驱顶点path
             for (int j = 0; j < vertexList.size(); j++) {
-                if (!shortestPathSet[j]&& arcs[k][j] != 0 && min!=INF && (min + arcs[k][j] < dist[j]) ) {
+                if (!visited[j]&& arcs[k][j] != 0 && min!=INF && (min + arcs[k][j] < dist[j]) ) {
                     dist[j] = (arcs[k][j]==INF ? INF : (min + arcs[k][j]));
                     path[j] = k;
                 }
@@ -368,6 +372,7 @@ public class AdjacencyMatrixGraph {
         }
         return dist;
     }
+    
     /**
      *  @descript 最短路径算法：Floyd算法
      *  @return int[][]
@@ -438,7 +443,7 @@ public class AdjacencyMatrixGraph {
 		adjacencyMatrixGraph.insertEdge(1, 3, 3);
 		adjacencyMatrixGraph.insertEdge(1, 4, 7);
 		adjacencyMatrixGraph.insertEdge(2, 3, 21);
-		adjacencyMatrixGraph.insertEdge(4, 5, 2);
+		adjacencyMatrixGraph.insertEdge(3, 4, 2);
 		
 		adjacencyMatrixGraph.insertEdge(1, 0, 15);
 		adjacencyMatrixGraph.insertEdge(2, 0, 9);
@@ -446,7 +451,7 @@ public class AdjacencyMatrixGraph {
 		adjacencyMatrixGraph.insertEdge(3, 1, 3);
 		adjacencyMatrixGraph.insertEdge(4, 1, 7);
 		adjacencyMatrixGraph.insertEdge(3, 2, 21);
-		adjacencyMatrixGraph.insertEdge(5, 4, 2);
+		adjacencyMatrixGraph.insertEdge(4, 3, 2);
 		
 		System.out.println("==========Adjacency Matrix==========");
 		adjacencyMatrixGraph.display();
@@ -463,9 +468,9 @@ public class AdjacencyMatrixGraph {
 		System.out.println("============Kruskal============");
 		adjacencyMatrixGraph.kruskal(adjacencyMatrixGraph.arcs);
 		System.out.println("============Dijkstra============");
-		int[] dijkstraDistance = adjacencyMatrixGraph.dijkstra(0);
+		adjacencyMatrixGraph.dijkstra(0);
 		System.out.println("============Floyd============");
-		int[][] floydDistance = adjacencyMatrixGraph.floyd();
+		adjacencyMatrixGraph.floyd();
 		/*  
 		 *		A	B	C	D	E	
 		 *	A	0	15	0	11	9	

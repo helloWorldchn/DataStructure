@@ -7,6 +7,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Queue;
+import java.util.Stack;
 
 //邻接表
 public class AdjacencyListGraph {
@@ -365,6 +366,137 @@ public class AdjacencyListGraph {
         }
     }
     
+	private static final int INF = Integer.MAX_VALUE;
+    
+    /**
+     *  @descript 最短路径算法：dijkstra算法
+     *  @param start
+     *  @return int[]
+     */
+    public int[] dijkstra(String startVertex) {
+        int start = vertexList.indexOf(startVertex);
+        if (start == -1) {
+            System.out.println("Start vertex not found.");
+            return new int[] {};
+        }
+
+        int[] dist = new int[vertexNumber];  // 表示从源点到顶点之间的弧上的权值
+        boolean[] visited = new boolean[vertexNumber];// 存放所有已知实际最短路径值的顶点,true代表已知其最短路径
+        int[] path = new int[vertexNumber]; // 表示从源点到顶点之间的最短路径的前驱结点
+        Arrays.fill(dist, INF);
+        Arrays.fill(path, -1);
+        dist[start] = 0;
+
+        for (int i = 0; i < vertexNumber; i++) {
+            int u = -1;
+            int minDist = INF;
+            for (int j = 0; j < vertexNumber; j++) {
+                if (!visited[j] && dist[j] < minDist) {
+                    u = j;
+                    minDist = dist[j];
+                }
+            }
+
+            if (u == -1) break; // 所有可达顶点已访问完毕
+            visited[u] = true;
+
+            EdgeNode edgeNode = headNode[u].firstEdge;
+            while (edgeNode != null) {
+                int v = edgeNode.adjvex;
+                int weight = edgeNode.weight;
+                if (!visited[v] && dist[u] + weight < dist[v]) {
+                    dist[v] = dist[u] + weight;
+                    path[v] = u;
+                }
+                edgeNode = edgeNode.next;
+            }
+        }
+
+        // 打印最短路径和最短路径长度
+        for (int i = 0; i < vertexNumber; i++) {
+        	if (i != start) {
+        		System.out.print("Shortest Path of "+ vertexList.get(start) +" to " + vertexList.get(i)+ " : " + dist[i]);
+                System.out.print("\t" +"Path : ");
+	            int index = i;
+	            Stack<Integer> stack = new Stack<>();
+	            stack.push(index);
+	            while (path[index] != start) {
+	                stack.push(path[index]);
+	                index = path[index];
+	            }
+	            stack.push(start);
+	            while (!stack.isEmpty()) {
+	                System.out.print(vertexList.get(stack.pop()));
+	            	if (!stack.isEmpty()) {
+	                    System.out.print("->");
+					}
+	            }
+	            System.out.println();
+        	}
+        }
+        return dist;
+    }
+    
+    /**
+     *  @descript 最短路径算法：Floyd算法
+     *  @return int[][]
+     */
+    public int[][] floyd() {
+    	// 初始化
+        int[][] dist = new int[vertexNumber][vertexNumber]; // 矩阵 作为距离
+    	int[][] path = new int[vertexNumber][vertexNumber]; // 前驱结点
+        for (int i = 0; i < vertexNumber; i++) {
+            Arrays.fill(dist[i], INF);
+            dist[i][i] = 0;
+            path[i][i] = -1;
+        }
+        for (int i = 0; i < vertexNumber; i++) {
+            EdgeNode edgeNode = headNode[i].firstEdge;
+            while (edgeNode != null) {
+                dist[i][edgeNode.adjvex] = edgeNode.weight;
+                path[i][edgeNode.adjvex] = i;
+                edgeNode = edgeNode.next;
+            }
+        }
+        
+        // 动态规划思想迭代计算
+        for (int k = 0; k < vertexNumber; k++) {
+            for (int i = 0; i < vertexNumber; i++) {
+                for (int j = 0; j < vertexNumber; j++) {
+                    if (dist[i][k] != INF && dist[k][j] != INF && dist[i][k] + dist[k][j] < dist[i][j]) {
+                        path[i][j] = dist[i][j]>dist[i][k] + dist[k][j]? path[k][j]: path[i][j];
+                    	dist[i][j] = dist[i][k] + dist[k][j];
+                    }
+                }
+            }
+        }
+
+        // 打印
+        for (int i = 0; i < vertexNumber; i++) {
+            for (int j = 0; j < vertexNumber; j++) {
+                if (i != j && dist[i][j] != INF) {
+                    System.out.print("Shortest Path of " + vertexList.get(i) + " to " + vertexList.get(j) + " : " + dist[i][j]);
+                    System.out.print("\t" +"Path : ");
+                    int temp = path[i][j];
+                    Stack<Integer> stack = new Stack<>();
+                    stack.push(j);
+                    while (path[i][temp] != -1) {
+                        stack.push(temp);
+                        temp = path[i][temp];
+                    }
+                    stack.push(i);
+                    while (!stack.isEmpty()) {
+                        System.out.print(vertexList.get(stack.pop()));
+                        if (!stack.isEmpty()) {
+                            System.out.print("->");
+                        }
+                    }
+                    System.out.println();
+                }
+            }
+        }
+        return dist;
+    }
 	public static void main(String[] args) {
 		AdjacencyListGraph adjacencyListGraph = new AdjacencyListGraph(5);
 
@@ -374,21 +506,22 @@ public class AdjacencyListGraph {
 		adjacencyListGraph.insertVertex("D");
 		adjacencyListGraph.insertVertex("E");
 		
+		
 		adjacencyListGraph.insertEdge("A", "B", 15);
-		adjacencyListGraph.insertEdge("A", "E", 9);
-		adjacencyListGraph.insertEdge("B", "C", 3);
-		adjacencyListGraph.insertEdge("C", "D", 2);
-		adjacencyListGraph.insertEdge("D", "A", 11);
-		adjacencyListGraph.insertEdge("D", "B", 7);
-		adjacencyListGraph.insertEdge("E", "C", 21);
+		adjacencyListGraph.insertEdge("A", "C", 9);
+		adjacencyListGraph.insertEdge("A", "E", 11);
+		adjacencyListGraph.insertEdge("B", "D", 3);
+		adjacencyListGraph.insertEdge("B", "E", 7);
+		adjacencyListGraph.insertEdge("C", "D", 21);
+		adjacencyListGraph.insertEdge("D", "E", 2);
 		
 		adjacencyListGraph.insertEdge("B", "A", 15);
-		adjacencyListGraph.insertEdge("E", "A", 9);
-		adjacencyListGraph.insertEdge("C", "B", 3);
-		adjacencyListGraph.insertEdge("D", "C", 2);
-		adjacencyListGraph.insertEdge("A", "D", 11);
-		adjacencyListGraph.insertEdge("B", "D", 7);
-		adjacencyListGraph.insertEdge("C", "E", 21);
+		adjacencyListGraph.insertEdge("C", "A", 9);
+		adjacencyListGraph.insertEdge("E", "A", 11);
+		adjacencyListGraph.insertEdge("D", "B", 3);
+		adjacencyListGraph.insertEdge("E", "B", 7);
+		adjacencyListGraph.insertEdge("D", "C", 21);
+		adjacencyListGraph.insertEdge("E", "D", 2);
 		
 		System.out.println("==========Adjacency List==========");
 		adjacencyListGraph.display();
@@ -404,6 +537,10 @@ public class AdjacencyListGraph {
 		adjacencyListGraph.prim();
 		System.out.println("============Kruskal============");
 		adjacencyListGraph.kruskal();
+		System.out.println("============dijkstra============");
+		adjacencyListGraph.dijkstra("A");
+		System.out.println("============Floyd============");
+		adjacencyListGraph.floyd();
 		/*
 		 * A-->	[B|15]-->	[E|9]-->	[D|11]
 		 * B-->	[C|3]-->	[A|15]-->	[D|7]
