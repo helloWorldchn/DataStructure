@@ -390,7 +390,7 @@ public class AdjacencyMatrixGraph {
         for (int k = 0; k < vertexNumber; k++) {
             for (int i = 0; i < vertexNumber; i++) {
                 for (int j = 0; j < vertexNumber; j++) {
-                	if (i!=j && arcs[i][k] != 0 && arcs[k][j] != 0) {
+                	if (i!=j && dist[i][k] != INF && dist[k][j] != INF) {
                         path[i][j] = dist[i][j]>dist[i][k] + dist[k][j]? path[k][j]: path[i][j];
                     	dist[i][j] = Math.min(dist[i][j], dist[i][k] + dist[k][j]); // 更新递推公式
 					}
